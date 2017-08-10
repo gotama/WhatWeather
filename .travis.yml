@@ -26,6 +26,9 @@ android:
     - 'android-sdk-license-.+'
     - '.+'
 
+before_script:
+  - cp ./app/src/debug/google-services.json ./app/google-services.json
+  
 script:
   - ./gradlew build assembleAndroidTest
   - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
