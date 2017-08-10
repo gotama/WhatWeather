@@ -7,3 +7,4 @@ android:
     - android-25
   licenses:
     - 'android-sdk-license-.+'
+    - 'constraint-layout;1.0.2'
