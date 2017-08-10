@@ -10,11 +10,13 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 public class MainActivityTest {
-    @Rule public ActivityTestRule<MainActivity> activityTestRule =
+    @Rule
+    public ActivityTestRule<MainActivity> activityTestRule =
             new ActivityTestRule<>(MainActivity.class);
 
-    @Test public void shouldShow42() {
+    @Test
+    public void shouldShow42() {
         // then
-        onView(withText("42")).check(matches(isDisplayed()));
+        onView(withText("Hello World!")).check(matches(isDisplayed()));
     }
 }

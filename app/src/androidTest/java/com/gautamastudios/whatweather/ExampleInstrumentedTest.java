@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.gautamastudios.whatweather", appContext.getPackageName());
+        assertEquals("com.gautamastudios.whatweather.debug", appContext.getPackageName());
     }
 }
