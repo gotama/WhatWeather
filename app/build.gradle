@@ -32,6 +32,9 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.google.android.gms:play-services-auth:11.0.1'
     compile 'com.google.firebase:firebase-core:11.0.1'
+    compile 'android.arch.persistence.room:runtime:1.0.0-alpha5'
+    annotationProcessor "android.arch.persistence.room:compiler:1.0.0-alpha5"
+    compile 'com.google.code.gson:gson:2.8.1'
 }
 
 apply plugin: 'com.google.gms.google-services'
