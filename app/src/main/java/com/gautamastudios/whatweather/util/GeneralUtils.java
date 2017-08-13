@@ -10,9 +10,9 @@ import java.util.Date;
 public final class GeneralUtils {
 
     private static final String TAG = GeneralUtils.class.getSimpleName();
+    private static final int ONE_THOUSAND = 1000;
 
     public static String readFileFromAssets(String fileName, Context context) {
-
         try {
             InputStream is = context.getAssets().open(fileName);
             int size = is.available();
@@ -20,9 +20,7 @@ public final class GeneralUtils {
             is.read(buffer);
             is.close();
             String text = new String(buffer);
-
             return text;
-
         } catch (IOException e) {
             Log.e(TAG, e.getMessage(), e);
             return null;
@@ -30,6 +28,6 @@ public final class GeneralUtils {
     }
 
     public static Date convertUnixTime(int unixTime) {
-        return new Date((long) unixTime * 1000);
+        return new Date((long) unixTime * ONE_THOUSAND);
     }
 }

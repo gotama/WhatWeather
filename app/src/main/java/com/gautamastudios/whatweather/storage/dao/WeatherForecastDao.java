@@ -2,21 +2,21 @@ package com.gautamastudios.whatweather.storage.dao;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
+import android.database.Cursor;
 
 import com.gautamastudios.whatweather.storage.model.WeatherForecast;
-
-import static com.gautamastudios.whatweather.storage.model.WeatherForecast.FIELD_PRIMARY_KEY;
 
 @Dao
 public interface WeatherForecastDao {
 
-    @Insert
-    void insert(WeatherForecast weatherForecast);
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    long insert(WeatherForecast weatherForecast);
 
-    @Query("SELECT * FROM weather WHERE " + FIELD_PRIMARY_KEY + " = :unixTimeStamp")
-    WeatherForecast queryTimeStampPrimaryKey(long unixTimeStamp);
+    @Query("SELECT * FROM " + WeatherForecast.TABLE_NAME)
+    Cursor query();
 
-    @Query("DELETE FROM weather")
-    void deleteTable();
+    @Query("DELETE FROM " + WeatherForecast.TABLE_NAME)
+    int deleteTable();
 }

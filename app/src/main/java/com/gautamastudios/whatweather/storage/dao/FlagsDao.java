@@ -2,21 +2,21 @@ package com.gautamastudios.whatweather.storage.dao;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
+import android.database.Cursor;
 
 import com.gautamastudios.whatweather.storage.model.Flags;
-
-import java.util.List;
 
 @Dao
 public interface FlagsDao {
 
-    @Insert
-    void insert(Flags flags);
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    long insert(Flags flags);
 
-    @Query("SELECT * FROM flags")
-    List<Flags> queryForFlags();
+    @Query("SELECT * FROM " + Flags.TABLE_NAME)
+    Cursor queryForFlags();
 
-    @Query("DELETE FROM flags")
-    void deleteTable();
+    @Query("DELETE FROM " + Flags.TABLE_NAME)
+    int deleteTable();
 }

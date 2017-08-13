@@ -5,14 +5,12 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
+import android.content.ContentValues;
 
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.gautamastudios.whatweather.storage.model.WeatherForecast.FIELD_LATITUDE;
-import static com.gautamastudios.whatweather.storage.model.WeatherForecast.FIELD_LONGITUDE;
 
 /**
  * API responses consist of a UTF-8-encoded, JSON-formatted object with the following properties:
@@ -50,29 +48,32 @@ import static com.gautamastudios.whatweather.storage.model.WeatherForecast.FIELD
  * A {@link Flags} object containing miscellaneous metadata about the request.
  */
 
-@Entity(tableName = "weather", indices = {@Index(value = {FIELD_LATITUDE, FIELD_LONGITUDE}, unique = true)})
+@Entity(tableName = WeatherForecast.TABLE_NAME,
+        indices = {@Index(value = {WeatherForecast.FIELD_LATITUDE, WeatherForecast.FIELD_LONGITUDE}, unique = true)})
 public class WeatherForecast {
 
+    public static final String TABLE_NAME = "weather";
     public static final String FIELD_PRIMARY_KEY = "primary_key";
     public static final String FIELD_LATITUDE = "latitude";
     public static final String FIELD_LONGITUDE = "longitude";
     public static final String FIELD_TIMEZONE = "timezone";
+    public static final String FIELD_OFFSET = "offset";
 
     @PrimaryKey
     @ColumnInfo(name = FIELD_PRIMARY_KEY)
-    private long timeStampPrimaryKey;
+    public long timeStampPrimaryKey;
 
     @ColumnInfo(name = FIELD_LATITUDE)
-    private double latitude;
+    public double latitude;
 
     @ColumnInfo(name = FIELD_LONGITUDE)
-    private double longitude;
+    public double longitude;
 
     @ColumnInfo(name = FIELD_TIMEZONE)
-    private String timezone;
+    public String timezone;
 
-    @ColumnInfo(name = "offset")
-    private String offset;
+    @ColumnInfo(name = FIELD_OFFSET)
+    public String offset;
 
     @Ignore
     private DataPoint currently;
@@ -92,18 +93,36 @@ public class WeatherForecast {
     @Ignore
     private Flags flags;
 
-    public WeatherForecast(long timeStampPrimaryKey, double latitude, double longitude, String timezone,
-            String offset) {
-        this.timeStampPrimaryKey = timeStampPrimaryKey;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.timezone = timezone;
-        this.offset = offset;
+    /**
+     * Create a new {@link WeatherForecast} from the specified {@link ContentValues}.
+     *
+     * @param values A {@link ContentValues} that contains {@link #FIELD_PRIMARY_KEY}, {@link #FIELD_LATITUDE},
+     *               {@link #FIELD_LONGITUDE}, {@link #FIELD_TIMEZONE}, {@link #FIELD_OFFSET}
+     * @return An instance of {@link WeatherForecast}.
+     */
+    public static WeatherForecast fromContentValues(ContentValues values) {
+        final WeatherForecast weatherForecast = new WeatherForecast();
+        if (values.containsKey(FIELD_PRIMARY_KEY)) {
+            weatherForecast.timeStampPrimaryKey = values.getAsLong(FIELD_PRIMARY_KEY);
+        }
+        if (values.containsKey(FIELD_LATITUDE)) {
+            weatherForecast.latitude = values.getAsDouble(FIELD_LATITUDE);
+        }
+        if (values.containsKey(FIELD_LONGITUDE)) {
+            weatherForecast.longitude = values.getAsDouble(FIELD_LONGITUDE);
+        }
+        if (values.containsKey(FIELD_TIMEZONE)) {
+            weatherForecast.timezone = values.getAsString(FIELD_TIMEZONE);
+        }
+        if (values.containsKey(FIELD_OFFSET)) {
+            weatherForecast.offset = values.getAsString(FIELD_OFFSET);
+        }
+        return weatherForecast;
     }
 
     public static WeatherForecast buildWeatherForecastFromResponse(String weatherJsonRespone) {
         WeatherForecast weatherForecast = new Gson().fromJson(weatherJsonRespone, WeatherForecast.class);
-        weatherForecast.timeStampPrimaryKey = weatherForecast.getCurrently().getTime();
+        weatherForecast.timeStampPrimaryKey = weatherForecast.getCurrently().time;
         weatherForecast.currently.setDataPointType(DataPointType.CURRENTLY);
 
         weatherForecast.getMinutely().setDataBlockType(DataPointType.MINUTELY);
@@ -113,47 +132,27 @@ public class WeatherForecast {
         return weatherForecast;
     }
 
-    public long getTimeStampPrimaryKey() {
-        return timeStampPrimaryKey;
-    }
-
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public String getTimezone() {
-        return timezone;
-    }
-
-    public String getOffset() {
-        return offset;
-    }
-
     public DataPoint getCurrently() {
         return currently;
     }
 
     public DataBlock getMinutely() {
         if (minutely == null) {
-            minutely = new DataBlock(-1, "", "", 0);
+            minutely = new DataBlock();
         }
         return minutely;
     }
 
     public DataBlock getHourly() {
         if (hourly == null) {
-            hourly = new DataBlock(-1, "", "", 0);
+            hourly = new DataBlock();
         }
         return hourly;
     }
 
     public DataBlock getDaily() {
         if (daily == null) {
-            daily = new DataBlock(-1, "", "", 0);
+            daily = new DataBlock();
         }
         return daily;
     }
@@ -167,7 +166,7 @@ public class WeatherForecast {
 
     public Flags getFlags() {
         if (flags == null) {
-            flags = new Flags(-1, "", null, "");
+            flags = new Flags();
         }
         return flags;
     }

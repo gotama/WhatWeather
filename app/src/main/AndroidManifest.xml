@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gautamastudios.whatweather">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <permission android:name="com.gautamastudios.whatweather.storage.provider.READ_WRITE" />
 
     <application
         android:name=".WeatherApplication"
@@ -19,6 +20,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".service.ForecastSyncJobService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <provider
+            android:name=".storage.provider.WeatherForecastProvider"
+            android:authorities="com.gautamastudios.whatweather.storage.provider"
+            android:exported="true"
+            android:permission="com.gautamastudios.whatweather.provider.READ_WRITE" />
+
     </application>
 
 </manifest>
