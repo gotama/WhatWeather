@@ -5,12 +5,15 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public final class GeneralUtils {
 
     private static final String TAG = GeneralUtils.class.getSimpleName();
-    private static final int ONE_THOUSAND = 1000;
+    public static final String UNIX_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
+    public static final long ONE_THOUSAND = 1000L;
 
     public static String readFileFromAssets(String fileName, Context context) {
         try {
@@ -27,7 +30,7 @@ public final class GeneralUtils {
         }
     }
 
-    public static Date convertUnixTime(int unixTime) {
-        return new Date((long) unixTime * ONE_THOUSAND);
+    public static String convertUnixTime(long unixTime) {
+        return new SimpleDateFormat(UNIX_DATE_FORMAT, Locale.US).format(new Date(unixTime * ONE_THOUSAND));
     }
 }

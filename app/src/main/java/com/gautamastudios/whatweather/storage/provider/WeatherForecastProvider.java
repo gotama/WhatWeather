@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.gautamastudios.whatweather.logger.WeatherLog;
 import com.gautamastudios.whatweather.storage.WeatherDatabase;
 import com.gautamastudios.whatweather.storage.model.Alert;
 import com.gautamastudios.whatweather.storage.model.DataBlock;
@@ -74,7 +75,6 @@ public class WeatherForecastProvider extends ContentProvider {
             return null;
         }
         final Cursor cursor;
-
         switch (MATCHER.match(uri)) {
             case CODE_WEATHER_TABLE:
                 cursor = WeatherDatabase.getInstance(context).weatherForecastDao().query();
@@ -82,8 +82,12 @@ public class WeatherForecastProvider extends ContentProvider {
                 return cursor;
             case CODE_DATA_POINT_TABLE:
                 @DataPointType int dpType = Integer.valueOf(selection);
+                WeatherLog.d(TAG, "LoaderJournal", "queryDataPointsWhere : " + dpType);
                 cursor = WeatherDatabase.getInstance(context).dataPointDao().queryDataPointsWhere(dpType);
+                WeatherLog.d(TAG, "LoaderJournal", "finish query with cursor count of : " + cursor.getCount());
+                WeatherLog.d(TAG, "LoaderJournal", "setNotificationUri started");
                 cursor.setNotificationUri(context.getContentResolver(), uri);
+                WeatherLog.d(TAG, "LoaderJournal", "setNotificationUri finished");
                 return cursor;
             case CODE_DATA_BLOCK_TABLE:
                 @DataPointType int dbType = Integer.valueOf(selection);
@@ -118,9 +122,13 @@ public class WeatherForecastProvider extends ContentProvider {
                 context.getContentResolver().notifyChange(uri, null);
                 return ContentUris.withAppendedId(uri, id);
             case CODE_DATA_POINT_TABLE:
+                WeatherLog.d(TAG, "LoaderJournal", "Start insert contentValues : " + contentValues.size());
                 id = WeatherDatabase.getInstance(context).dataPointDao().insert(
                         DataPoint.fromContentValues(contentValues));
+                WeatherLog.d(TAG, "LoaderJournal", "Finish insert row added : " + id);
+                WeatherLog.d(TAG, "LoaderJournal", "notifyChange started");
                 context.getContentResolver().notifyChange(uri, null);
+                WeatherLog.d(TAG, "LoaderJournal", "notifyChange finished");
                 return ContentUris.withAppendedId(uri, id);
             case CODE_DATA_BLOCK_TABLE:
                 id = WeatherDatabase.getInstance(context).dataBlockDao().insert(
@@ -154,8 +162,10 @@ public class WeatherForecastProvider extends ContentProvider {
                 for (ContentValues values : valuesArray) {
                     dataPoints.add(DataPoint.fromContentValues(values));
                 }
-
-                return WeatherDatabase.getInstance(context).dataPointDao().insert(dataPoints).length;
+                WeatherLog.d(TAG, "LoaderJournal", "Bulk insert started");
+                long[] length = WeatherDatabase.getInstance(context).dataPointDao().insert(dataPoints);
+                WeatherLog.d(TAG, "LoaderJournal", "Bulk insert finished");
+                return length.length;
             case CODE_ALERT_TABLE:
                 final List<Alert> alerts = new ArrayList<>();
                 for (ContentValues values : valuesArray) {

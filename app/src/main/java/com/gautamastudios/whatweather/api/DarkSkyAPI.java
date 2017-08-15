@@ -1,7 +1,5 @@
 package com.gautamastudios.whatweather.api;
 
-import android.util.Log;
-
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -9,6 +7,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.gautamastudios.whatweather.WeatherApplication;
+import com.gautamastudios.whatweather.logger.WeatherLog;
 
 import org.json.JSONObject;
 
@@ -29,7 +28,8 @@ public class DarkSkyAPI {
     private static final double CHAOS = 0;
 
     private static String buildURL(double latitude, double longitude) {
-        return BASE_URL + WeatherApplication.getKey() + "/" + latitude + "," + longitude + "?delay=" + DELAY + "&chaos=" + CHAOS;
+        return BASE_URL + WeatherApplication.getKey() + "/" + latitude + "," + longitude + "?delay=" + DELAY +
+                "&chaos=" + CHAOS;
     }
 
     public static void getJsonObjectForecast(final APICallback apiCallback) {
@@ -41,7 +41,7 @@ public class DarkSkyAPI {
                     public void onResponse(JSONObject response) {
                         if (response != null) {
                             //TODO add logging to callback
-                            Log.d(TAG, response.toString());
+                            WeatherLog.d(TAG, "NetworkJournal", response.toString());
                             apiCallback.onSuccess(response);
                         } else {
                             apiCallback.onFail(ERROR_MESSAGE, -1);

@@ -26,6 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -107,13 +109,19 @@ public class DbEntityReadWriteTest {
             assertThat(rowCount, is(minutelyValues.length));
 
             final ContentValues[] hourlyValues = WeatherForecastProvider.getBulkInsertDataPointValues(
-                    weatherForecast.getMinutely().getData(DataPointType.HOURLY));
+                    weatherForecast.getHourly().getData(DataPointType.HOURLY));
             rowCount = contentResolver.bulkInsert(WeatherForecastProvider.getUriProvider(DataPoint.TABLE_NAME),
                     hourlyValues);
             assertThat(rowCount, is(hourlyValues.length));
 
             final ContentValues[] dailyValues = WeatherForecastProvider.getBulkInsertDataPointValues(
-                    weatherForecast.getMinutely().getData(DataPointType.DAILY));
+                    weatherForecast.getDaily().getData(DataPointType.DAILY));
+
+            final List<DataPoint> dataPoints = new ArrayList<>();
+            for (ContentValues values : dailyValues) {
+                dataPoints.add(DataPoint.fromContentValues(values));
+            }
+
             rowCount = contentResolver.bulkInsert(WeatherForecastProvider.getUriProvider(DataPoint.TABLE_NAME),
                     dailyValues);
             assertThat(rowCount, is(dailyValues.length));
@@ -164,6 +172,7 @@ public class DbEntityReadWriteTest {
             assertThat(
                     currentlyDPCursor.getInt(currentlyDPCursor.getColumnIndexOrThrow(DataPoint.FIELD_DATA_POINT_TYPE)),
                     is(DataPointType.CURRENTLY));
+            currentlyDPCursor.close();
 
             final Cursor minutelyDPCursor = contentResolver.query(
                     WeatherForecastProvider.getUriProvider(DataPoint.TABLE_NAME),
@@ -175,9 +184,10 @@ public class DbEntityReadWriteTest {
             }
             while (minutelyDPCursor.moveToNext()) {
                 assertThat(minutelyDPCursor
-                                .getInt(currentlyDPCursor.getColumnIndexOrThrow(DataPoint.FIELD_DATA_POINT_TYPE)),
+                                .getInt(minutelyDPCursor.getColumnIndexOrThrow(DataPoint.FIELD_DATA_POINT_TYPE)),
                         is(DataPointType.MINUTELY));
             }
+            minutelyDPCursor.close();
 
             final Cursor hourlyDPCursor = contentResolver.query(
                     WeatherForecastProvider.getUriProvider(DataPoint.TABLE_NAME),
@@ -188,10 +198,10 @@ public class DbEntityReadWriteTest {
                 assertThat(hourlyDPCursor.moveToFirst(), is(true));
             }
             while (hourlyDPCursor.moveToNext()) {
-                assertThat(
-                        hourlyDPCursor.getInt(currentlyDPCursor.getColumnIndexOrThrow(DataPoint.FIELD_DATA_POINT_TYPE)),
+                assertThat(hourlyDPCursor.getInt(hourlyDPCursor.getColumnIndexOrThrow(DataPoint.FIELD_DATA_POINT_TYPE)),
                         is(DataPointType.HOURLY));
             }
+            hourlyDPCursor.close();
 
             final Cursor dailyDPCursor = contentResolver.query(
                     WeatherForecastProvider.getUriProvider(DataPoint.TABLE_NAME),
@@ -202,10 +212,10 @@ public class DbEntityReadWriteTest {
                 assertThat(dailyDPCursor.moveToFirst(), is(true));
             }
             while (dailyDPCursor.moveToNext()) {
-                assertThat(
-                        dailyDPCursor.getInt(currentlyDPCursor.getColumnIndexOrThrow(DataPoint.FIELD_DATA_POINT_TYPE)),
+                assertThat(dailyDPCursor.getInt(dailyDPCursor.getColumnIndexOrThrow(DataPoint.FIELD_DATA_POINT_TYPE)),
                         is(DataPointType.DAILY));
             }
+            dailyDPCursor.close();
 
             final Cursor minutelyDBCursor = contentResolver.query(
                     WeatherForecastProvider.getUriProvider(DataBlock.TABLE_NAME),
@@ -215,6 +225,7 @@ public class DbEntityReadWriteTest {
             assertThat(minutelyDBCursor.moveToFirst(), is(true));
             assertThat(minutelyDBCursor.getInt(minutelyDBCursor.getColumnIndexOrThrow(DataBlock.FIELD_DATA_BLOCK_TYPE)),
                     is(DataPointType.MINUTELY));
+            minutelyDBCursor.close();
 
             final Cursor hourlyDBCursor = contentResolver.query(
                     WeatherForecastProvider.getUriProvider(DataBlock.TABLE_NAME),
@@ -224,6 +235,7 @@ public class DbEntityReadWriteTest {
             assertThat(hourlyDBCursor.moveToFirst(), is(true));
             assertThat(hourlyDBCursor.getInt(hourlyDBCursor.getColumnIndexOrThrow(DataBlock.FIELD_DATA_BLOCK_TYPE)),
                     is(DataPointType.HOURLY));
+            hourlyDBCursor.close();
 
             final Cursor dailyDBCursor = contentResolver.query(
                     WeatherForecastProvider.getUriProvider(DataBlock.TABLE_NAME),
@@ -233,6 +245,7 @@ public class DbEntityReadWriteTest {
             assertThat(dailyDBCursor.moveToFirst(), is(true));
             assertThat(dailyDBCursor.getInt(dailyDBCursor.getColumnIndexOrThrow(DataBlock.FIELD_DATA_BLOCK_TYPE)),
                     is(DataPointType.DAILY));
+            dailyDBCursor.close();
 
             final Cursor alertsCursor = contentResolver.query(WeatherForecastProvider.getUriProvider(Alert.TABLE_NAME),
                     new String[]{Alert.FIELD_PRIMARY_KEY}, null, null, null);
@@ -241,12 +254,14 @@ public class DbEntityReadWriteTest {
             if (alertValues.length > 0) {
                 assertThat(alertsCursor.moveToFirst(), is(true));
             }
+            alertsCursor.close();
 
             final Cursor flagsCursor = contentResolver.query(WeatherForecastProvider.getUriProvider(Flags.TABLE_NAME),
                     new String[]{Flags.FIELD_PRIMARY_KEY}, null, null, null);
             assertThat(flagsCursor, notNullValue());
             assertThat(flagsCursor.getCount(), is(1));
             assertThat(flagsCursor.moveToFirst(), is(true));
+            flagsCursor.close();
 
             //DELETE
             final int wfCount = contentResolver.delete(

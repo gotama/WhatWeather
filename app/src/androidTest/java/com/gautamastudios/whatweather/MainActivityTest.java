@@ -6,6 +6,8 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.rule.ActivityTestRule;
 
+import com.gautamastudios.whatweather.ui.activity.MainActivity;
+
 import org.junit.Rule;
 import org.junit.Test;
 
