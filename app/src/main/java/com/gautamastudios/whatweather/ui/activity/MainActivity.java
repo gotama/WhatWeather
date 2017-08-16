@@ -15,6 +15,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.animation.AnimationUtils;
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupRecyclerView() {
         final Context context = recyclerView.getContext();
         final int spacing = getResources().getDimensionPixelOffset(R.dimen.default_spacing_small);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        recyclerView.setLayoutManager(new GridLayoutManager(context, 1, LinearLayoutManager.HORIZONTAL, false));
         recyclerView.setAdapter(dailyCardAdapter);
         recyclerView.addItemDecoration(new ItemOffsetDecoration(spacing));
     }

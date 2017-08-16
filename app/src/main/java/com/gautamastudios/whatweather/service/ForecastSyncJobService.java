@@ -194,6 +194,6 @@ public class ForecastSyncJobService extends JobService {
                 }
                 jobFinished(jobParameters, false);
             }
-        });
+        }, new String[]{DarkSkyAPI.EXCLUDE_MINUTELY});
     }
 }

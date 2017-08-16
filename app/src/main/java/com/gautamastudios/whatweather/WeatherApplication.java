@@ -136,11 +136,11 @@ public class WeatherApplication extends Application {
      * and setExact(int, long, PendingIntent).
      */
     public void scheduleAlarm() {
-        WeatherLog.d(TAG, "BackgroundServiceJournal", "scheduleAlarm");
         Intent intent = new Intent(getApplicationContext(), WeatherServiceReceiver.class);
         final PendingIntent pIntent = PendingIntent.getBroadcast(this, WeatherServiceReceiver.REQUEST_CODE, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         long twentyMinutes = MILLISECONDS.convert(20, MINUTES);
+        WeatherLog.d(TAG, "BackgroundServiceJournal", "scheduleAlarm : " + twentyMinutes);
         AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, twentyMinutes, twentyMinutes, pIntent);
     }
