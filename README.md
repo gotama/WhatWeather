@@ -1,7 +1,11 @@
-# WhatWeather
+# WhatWeather [![Build Status][ci-badge]][ci-link] [![codecov][codecov-badge]][codecov-link] 
 
-[![Build Status](https://travis-ci.org/gotama/WhatWeather.svg?branch=master)](https://travis-ci.org/gotama/WhatWeather)
-[![codecov](https://codecov.io/gh/gotama/whatweather/branch/master/graph/badge.svg)](https://codecov.io/gh/gotama/whatweather)
+[ci-badge]: https://travis-ci.org/gotama/WhatWeather.svg?branch=master
+[ci-link]: https://travis-ci.org/gotama/WhatWeather
+
+[codecov-badge]: https://codecov.io/gh/gotama/whatweather/branch/master/graph/badge.svg
+[codecov-link]: https://codecov.io/gh/gotama/whatweather
+
 
 //TODO make readme legit ;)
 
