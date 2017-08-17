@@ -5,6 +5,8 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.content.ContentValues;
 
+import com.gautamastudios.whatweather.R;
+
 /**
  * A data point object contains various properties, each representing the average (unless otherwise specified) of a
  * particular weather phenomenon occurring during a period of time: an instant in the case of
@@ -447,18 +449,44 @@ public class DataPoint {
         return dataPoint;
     }
 
-    // TODO DEFAULT("severe-weather") when UI layer is being built
-    // (Developers should ensure that a sensible default is defined, as
-    // * additional values, such as hail, thunderstorm, or tornado, may be defined in the future.)
-    private enum Icon {
-        CLEAR_DAY("clear-day"), CLEAR_NIGHT("clear-night"), RAIN("rain"), SNOW("snow"), SLEET("sleet"), WIND("wind"),
-        FOG("fog"), CLOUDY("cloudy"), PARTLY_CLOUDY_DAY("partly-cloudy-day"), PARTLY_CLOUDY_NIGHT(
-                "partly-cloudy-night"), DEFAULT("severe-weather");
+    public enum Icon {
+        CLEAR_DAY("clear-day", R.drawable.ic_sunny),
+        CLEAR_NIGHT("clear-night", R.drawable.ic_moon),
+        RAIN("rain", R.drawable.ic_rain_windy),
+        SNOW("snow", R.drawable.ic_snowflake),
+        SLEET("sleet", R.drawable.ic_sleet),
+        WIND("wind", R.drawable.ic_sunny_windy),
+        FOG("fog", R.drawable.ic_mist),
+        CLOUDY("cloudy", R.drawable.ic_partly_cloudy),
+        PARTLY_CLOUDY_DAY("partly-cloudy-day", R.drawable.ic_partly_cloudy),
+        PARTLY_CLOUDY_NIGHT("partly-cloudy-night", R.drawable.ic_partly_cloudy),
+        HAIL("hail", R.drawable.ic_hail),
+        THUNDERSTORM("thunderstorm", R.drawable.ic_rain_thunder_warning),
+        DEFAULT("", R.drawable.ic_sleet);
 
         private String displayName;
+        private int resourceId;
 
-        Icon(String displayName) {
+        Icon(String displayName, int resourceId) {
             this.displayName = displayName;
+            this.resourceId = resourceId;
+        }
+
+        public static Icon getIcon(String iconValue) {
+            for (Icon icon : values()) {
+                if (iconValue.equals(icon.getDisplayName())) {
+                    return icon;
+                }
+            }
+            return DEFAULT;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public int getResourceId() {
+            return resourceId;
         }
     }
 }
