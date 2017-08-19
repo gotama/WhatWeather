@@ -2,9 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'jacoco-android'
 
 def DARK_KEY = '"' + DarkProp + '"' ?: '"missing key"';
+def MY_PROP = '"' + MyProp + '"' ?: '"missing prop"';
 
 android.buildTypes.each { type -> ;
     type.buildConfigField 'String', 'DARK_KEY', DARK_KEY
+}
+
+android.buildTypes.each { type -> ;
+    type.buildConfigField 'String', 'MY_PROP', MY_PROP
 }
 
 

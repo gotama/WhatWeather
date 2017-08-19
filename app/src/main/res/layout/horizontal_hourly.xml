@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/hourly_parent_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="0dp"
+    android:layout_marginRight="0dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/temp_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/hourly_background_container"
+        android:layout_centerHorizontal="true">
+
+        <TextView
+            android:id="@+id/hourly_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="24"
+            android:textColor="@android:color/black" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/hourly_background_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/time_container"
+        android:layout_alignLeft="@+id/time_container"
+        android:layout_alignRight="@+id/time_container"
+        android:layout_centerHorizontal="true">
+
+        <View
+            android:id="@+id/hourly_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:background="@color/alphaColorPrimary" />
+
+        <ImageView
+            android:id="@+id/hourly_image"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_alignBottom="@+id/hourly_background"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="5dp" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/time_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:gravity="bottom"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp">
+
+        <TextView
+            android:id="@+id/hourly_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="14:00" />
+    </LinearLayout>
+
+</RelativeLayout>

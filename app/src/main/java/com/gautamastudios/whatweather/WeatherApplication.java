@@ -62,10 +62,6 @@ public class WeatherApplication extends Application {
         getRequestQueue().add(request);
     }
 
-    public static String getKey() {
-        return BuildConfig.DARK_KEY;
-    }
-
     /**
      * The weather forecast does not change often, so the API should not be queried more often than every 15 minutes.
      * Instead, the data should be cached in a database or file, and local data should be used to show the forecast if

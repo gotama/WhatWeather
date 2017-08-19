@@ -2,7 +2,6 @@ package com.gautamastudios.whatweather.ui.activity;
 
 import android.content.ComponentName;
 import android.content.ContentUris;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -15,11 +14,11 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.animation.AnimationUtils;
-import android.view.animation.LayoutAnimationController;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -33,10 +32,12 @@ import com.gautamastudios.whatweather.storage.model.DataPoint;
 import com.gautamastudios.whatweather.storage.model.DataPointType;
 import com.gautamastudios.whatweather.storage.model.WeatherForecast;
 import com.gautamastudios.whatweather.storage.provider.WeatherForecastProvider;
-import com.gautamastudios.whatweather.ui.adapter.DailyCardAdapter;
-import com.gautamastudios.whatweather.ui.animation.ItemOffsetDecoration;
+import com.gautamastudios.whatweather.ui.adapter.HorizontalHourlyAdapter;
+import com.gautamastudios.whatweather.ui.adapter.WeatherViewPageAdapter;
+import com.gautamastudios.whatweather.util.GeneralUtils;
 
 import java.lang.ref.WeakReference;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,38 +45,31 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int GET_WEATHER_FORECAST = 1;
     private static final int GET_CURRENT_DATA_POINT = 2;
-    private static final int GET_DAILY_DATA_POINT = 3;
-    private static final int GET_DATA_BLOCK = 4;
-    private static final int GET_ALERT = 5;
-    private static final int GET_FLAG = 6;
+    private static final int GET_HOURLY_DATA_POINT = 3;
+    private static final int GET_DAILY_DATA_POINT = 4;
+    private static final int GET_DATA_BLOCK = 5;
+    private static final int GET_ALERT = 6;
+    private static final int GET_FLAG = 7;
 
     public static final int MSG_JOB_STOP = 230;
 
     public static final String MESSENGER_INTENT_KEY = BuildConfig.APPLICATION_ID + ".MESSENGER_INTENT_KEY";
 
-    private DailyCardAdapter dailyCardAdapter;
     private IncomingMessageHandler incomingMessageHandler;
 
-    private RecyclerView recyclerView;
-
-    private TextView currentSummaryTextView;
-    private TextView currentTempTextView;
-    private ImageView currentWeatherIcon;
+    ViewPager viewPager;
+    WeatherViewPageAdapter viewPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.pager_activity_main);
+
+        viewPager = findViewById(R.id.viewpager);
+        viewPagerAdapter = new WeatherViewPageAdapter(this);
+        viewPager.setAdapter(viewPagerAdapter);
 
         incomingMessageHandler = new IncomingMessageHandler(this);
-
-        recyclerView = findViewById(R.id.daily_recycler_view);
-        currentSummaryTextView = findViewById(R.id.current_summary);
-        currentTempTextView = findViewById(R.id.current_temp);
-        currentWeatherIcon = findViewById(R.id.current_weather_icon);
-
-        dailyCardAdapter = new DailyCardAdapter();
-        setupRecyclerView();
     }
 
     @Override
@@ -91,10 +85,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        WeatherLog.d(TAG, "LoaderJournal", "initLoader called from onResume");
         Bundle args = new Bundle();
-        args.putInt(DataPoint.FIELD_DATA_POINT_TYPE, DataPointType.DAILY);
-        getSupportLoaderManager().initLoader(GET_DAILY_DATA_POINT, args, loaderCallbacks);
+        args.putInt(DataPoint.FIELD_DATA_POINT_TYPE, DataPointType.HOURLY);
+        getSupportLoaderManager().initLoader(GET_HOURLY_DATA_POINT, args, loaderCallbacks);
 
         args = new Bundle();
         args.putInt(DataPoint.FIELD_DATA_POINT_TYPE, DataPointType.CURRENTLY);
@@ -106,34 +99,35 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        getSupportLoaderManager().destroyLoader(GET_DAILY_DATA_POINT);
+        getSupportLoaderManager().destroyLoader(GET_HOURLY_DATA_POINT);
         getSupportLoaderManager().destroyLoader(GET_CURRENT_DATA_POINT);
         super.onDestroy();
     }
 
-    private void setupRecyclerView() {
-        final Context context = recyclerView.getContext();
-        final int spacing = getResources().getDimensionPixelOffset(R.dimen.default_spacing_small);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(dailyCardAdapter);
-        recyclerView.addItemDecoration(new ItemOffsetDecoration(spacing));
-    }
-
-    private void runLayoutAnimation(final RecyclerView recyclerView, final int animationResourceID) {
-        final Context context = recyclerView.getContext();
-
-        final LayoutAnimationController controller = AnimationUtils.loadLayoutAnimation(context, animationResourceID);
-
-        recyclerView.setLayoutAnimation(controller);
-        recyclerView.getAdapter().notifyDataSetChanged();
-        recyclerView.scheduleLayoutAnimation();
-    }
+    //TODO
+    //    private void setupRecyclerView() {
+    //        final Context context = recyclerView.getContext();
+    //        final int spacing = getResources().getDimensionPixelOffset(R.dimen.default_spacing_small);
+    //        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+    //        recyclerView.setAdapter(dailyCardAdapter);
+    //        recyclerView.addItemDecoration(new ItemOffsetDecoration(spacing));
+    //    }
+    //
+    //    private void runLayoutAnimation(final RecyclerView recyclerView, final int animationResourceID) {
+    //        final Context context = recyclerView.getContext();
+    //
+    //        final LayoutAnimationController controller = AnimationUtils.loadLayoutAnimation(context,
+    // animationResourceID);
+    //
+    //        recyclerView.setLayoutAnimation(controller);
+    //        recyclerView.getAdapter().notifyDataSetChanged();
+    //        recyclerView.scheduleLayoutAnimation();
+    //    }
 
     private final LoaderManager.LoaderCallbacks<Cursor> loaderCallbacks = new LoaderManager.LoaderCallbacks<Cursor>() {
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            WeatherLog.d(TAG, "LoaderJournal", "onCreateLoader id : " + id);
             switch (id) {
                 case GET_WEATHER_FORECAST:
                     Uri uri;
@@ -148,23 +142,16 @@ public class MainActivity extends AppCompatActivity {
                     return new CursorLoader(getApplicationContext(), uri,
                             new String[]{WeatherForecast.FIELD_PRIMARY_KEY}, null, null, null);
                 case GET_CURRENT_DATA_POINT:
+                case GET_HOURLY_DATA_POINT:
                 case GET_DAILY_DATA_POINT:
-                    WeatherLog.d(TAG, "LoaderJournal", "GET_DATA_POINT called");
-                    WeatherLog.d(TAG, "LoaderJournal",
-                            "URI : " + WeatherForecastProvider.getUriProvider(DataPoint.TABLE_NAME));
-
                     String dataType = "";
                     if (args != null) {
                         dataType = String.valueOf(args.getInt(DataPoint.FIELD_DATA_POINT_TYPE));
                     }
 
-                    WeatherLog.d(TAG, "LoaderJournal", "Creating cursorLoader");
-                    CursorLoader cursorLoader = new CursorLoader(getApplicationContext(),
+                    return new CursorLoader(getApplicationContext(),
                             WeatherForecastProvider.getUriProvider(DataPoint.TABLE_NAME),
                             new String[]{DataPoint.FIELD_PRIMARY_KEY}, dataType, null, null);
-
-                    WeatherLog.d(TAG, "LoaderJournal", "Returning cursorLoader");
-                    return cursorLoader;
                 case GET_DATA_BLOCK:
                     return null;
                 case GET_ALERT:
@@ -178,34 +165,66 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-            WeatherLog.d(TAG, "LoaderJournal",
-                    "onLoadFinished : " + data.getCount() + " - with id : " + loader.getId());
             switch (loader.getId()) {
                 case GET_WEATHER_FORECAST:
                     break;
                 case GET_CURRENT_DATA_POINT:
-                    if (data.getCount() > 0) {
-                        while (data.moveToNext()) {
-                            currentSummaryTextView.setText(
-                                    data.getString(data.getColumnIndex(DataPoint.FIELD_SUMMARY)));
+                    View currentView = viewPager.findViewWithTag(WeatherViewPageAdapter.WeatherPage.TODAY.getId());
 
-                            char degree = '\u00B0';
-                            double temp = data.getDouble(data.getColumnIndex(DataPoint.FIELD_TEMPERATURE));
+                    if (data.moveToFirst()) {
+                        do {
+                            TextView currentTime = currentView.findViewById(R.id.current_time);
+                            //TODO hi lo works only off daily
+                            TextView currentHiLo = currentView.findViewById(R.id.current_hi_lo);
+                            TextView currentTemp = currentView.findViewById(R.id.current_temp);
+                            TextView currentFeels = currentView.findViewById(R.id.current_feels_like);
+                            TextView currentSummary = currentView.findViewById(R.id.current_summary);
+                            ImageView currentIcon = currentView.findViewById(R.id.current_weather_icon);
 
-                            String tempWithDegreeSymbol = String.valueOf(Math.round(temp)) + degree;
-                            currentTempTextView.setText(tempWithDegreeSymbol);
+                            currentTime.setText(GeneralUtils
+                                    .convertUnixTimeToDate(data.getLong(data.getColumnIndex(DataPoint.FIELD_TIME))));
+
+                            currentTemp.setText(GeneralUtils.convertDoubleToTemp(
+                                    data.getDouble(data.getColumnIndex(DataPoint.FIELD_TEMPERATURE))));
 
                             String icon = data.getString(data.getColumnIndex(DataPoint.FIELD_ICON));
-                            currentWeatherIcon.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(),
-                                    DataPoint.Icon.getIcon(icon).getResourceId()));
-                        }
+                            currentIcon.setImageDrawable(ContextCompat
+                                    .getDrawable(getBaseContext(), DataPoint.Icon.getIcon(icon).getResourceId()));
+
+                            currentHiLo.setText(String.format(Locale.getDefault(), "Day %1$s - Night %2$s", GeneralUtils
+                                            .convertDoubleToTemp(data.getDouble(
+                                                    data.getColumnIndex(DataPoint.FIELD_APPARENT_TEMPERATURE_MAX))),
+                                    GeneralUtils.convertDoubleToTemp(data.getDouble(
+                                            data.getColumnIndex(DataPoint.FIELD_APPARENT_TEMPERATURE_MIN)))));
+
+                            currentFeels.setText(String.format(Locale.getDefault(), "Feels like %s", GeneralUtils
+                                    .convertDoubleToTemp(data.getDouble(
+                                            data.getColumnIndex(DataPoint.FIELD_APPARENT_TEMPERATURE)))));
+
+                            currentSummary.setText(data.getString(data.getColumnIndex(DataPoint.FIELD_SUMMARY)));
+                        } while (data.moveToNext());
+
                     }
 
+                    viewPagerAdapter.setCurrentCursor(data);
+                    break;
+                case GET_HOURLY_DATA_POINT:
+                    View hourlyView = viewPager.findViewWithTag(WeatherViewPageAdapter.WeatherPage.TODAY.getId());
+
+                    RecyclerView recyclerView = hourlyView.findViewById(R.id.hourly_recycler_view);
+                    if (recyclerView != null) {
+                        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getBaseContext(),
+                                LinearLayoutManager.HORIZONTAL, false);
+
+                        recyclerView.setLayoutManager(linearLayoutManager);
+                        recyclerView.setAdapter(new HorizontalHourlyAdapter(getBaseContext(), data));
+                    }
+
+                    viewPagerAdapter.setHourlyCursor(data);
                     break;
                 case GET_DAILY_DATA_POINT:
-                    WeatherLog.d(TAG, "LoaderJournal", "Updating Adapter");
-                    dailyCardAdapter.setDailyCursor(data);
-                    runLayoutAnimation(recyclerView, R.anim.layout_animation_from_right);
+                    //                    dailyCardAdapter.setDailyCursor(data);
+                    //                    runLayoutAnimation(recyclerView, R.anim.layout_animation_from_right);
                     break;
                 case GET_DATA_BLOCK:
                     break;
@@ -222,9 +241,12 @@ public class MainActivity extends AppCompatActivity {
                 case GET_WEATHER_FORECAST:
                     break;
                 case GET_DAILY_DATA_POINT:
-                    dailyCardAdapter.setDailyCursor(null);
                     break;
                 case GET_CURRENT_DATA_POINT:
+                    viewPagerAdapter.setCurrentCursor(null);
+                    break;
+                case GET_HOURLY_DATA_POINT:
+                    viewPagerAdapter.setHourlyCursor(null);
                     break;
                 case GET_DATA_BLOCK:
                     break;
@@ -260,8 +282,8 @@ public class MainActivity extends AppCompatActivity {
             switch (msg.what) {
                 case MSG_JOB_STOP:
                     Bundle args = new Bundle();
-                    args.putInt(DataPoint.FIELD_DATA_POINT_TYPE, DataPointType.DAILY);
-                    activityWeakReference.get().getSupportLoaderManager().restartLoader(GET_DAILY_DATA_POINT, args,
+                    args.putInt(DataPoint.FIELD_DATA_POINT_TYPE, DataPointType.HOURLY);
+                    activityWeakReference.get().getSupportLoaderManager().restartLoader(GET_HOURLY_DATA_POINT, args,
                             mainActivity.loaderCallbacks);
 
                     args = new Bundle();
