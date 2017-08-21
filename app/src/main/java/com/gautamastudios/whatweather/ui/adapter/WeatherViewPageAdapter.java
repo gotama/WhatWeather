@@ -83,11 +83,13 @@ public class WeatherViewPageAdapter extends PagerAdapter {
     }
 
     private void updateDailyWeather(RecyclerView recyclerView) {
-        WeatherLog.d(TAG, "CursorJournal", "Daily cursor count : " + dailyCursor.getCount());
-        WeatherLog.d(TAG, "CursorJournal", "Daily cursor isClosed : " + dailyCursor.isClosed());
         if (dailyCursor != null && dailyCursor.getCount() > 0) {
+            WeatherLog.d(TAG, "CursorJournal", "Daily cursor count : " + dailyCursor.getCount());
+            WeatherLog.d(TAG, "CursorJournal", "Daily cursor isClosed : " + dailyCursor.isClosed());
             if (dailyCursor.isClosed()) {
                 dailyCursor = null;
+                ((DailyCardAdapter) recyclerView.getAdapter()).updateDailyCursor(null);
+                WeatherLog.d(TAG, "CursorJournal", "Sending message");
                 sendMessage(MSG_DAILY_CURSOR_CLOSED, null);
             } else {
                 ((DailyCardAdapter) recyclerView.getAdapter()).updateDailyCursor(dailyCursor);
@@ -104,6 +106,7 @@ public class WeatherViewPageAdapter extends PagerAdapter {
         if (hourlyCursor != null && hourlyCursor.getCount() > 0) {
             if (hourlyCursor.isClosed()) {
                 hourlyCursor = null;
+                ((HorizontalHourlyAdapter) recyclerView.getAdapter()).updateHourlyCursor(null);
                 sendMessage(MSG_HOURLY_CURSOR_CLOSED, null);
             } else {
                 ((HorizontalHourlyAdapter) recyclerView.getAdapter()).updateHourlyCursor(hourlyCursor);
@@ -180,8 +183,8 @@ public class WeatherViewPageAdapter extends PagerAdapter {
         return context.getString(customPagerEnum.getTitleResId());
     }
 
-    WeatherPage currentPage;
-    ViewGroup currentViewGroup;
+    private WeatherPage currentPage = WeatherPage.TODAY;
+    private ViewGroup currentViewGroup;
 
     @Override
     public void setPrimaryItem(ViewGroup container, int position, Object object) {
@@ -189,12 +192,13 @@ public class WeatherViewPageAdapter extends PagerAdapter {
 
         currentPage = WeatherPage.getWeatherPage(position);
         currentViewGroup = (ViewGroup) object;
+
     }
 
     public void setCurrentCursor(Cursor cursor) {
         if (cursor != null && cursor.getCount() > 0) {
             currentCursor = cursor;
-            if (currentPage == WeatherPage.TODAY) {
+            if (currentPage == WeatherPage.TODAY && currentViewGroup != null) {
                 updateCurrentWeather(currentViewGroup);
             }
         }
@@ -203,7 +207,7 @@ public class WeatherViewPageAdapter extends PagerAdapter {
     public void setHourlyCursor(Cursor cursor) {
         if (cursor != null && cursor.getCount() > 0) {
             hourlyCursor = cursor;
-            if (currentPage == WeatherPage.TODAY) {
+            if (currentPage == WeatherPage.TODAY || currentPage == WeatherPage.TOMORROW && currentViewGroup != null) {
                 updateHourlyWeather((RecyclerView) currentViewGroup.findViewById(R.id.hourly_recycler_view));
             }
         }
@@ -214,7 +218,7 @@ public class WeatherViewPageAdapter extends PagerAdapter {
             WeatherLog.d(TAG, "CursorJournal", "setting dailyCursor");
             dailyCursor = cursor;
 
-            if (currentPage == WeatherPage.DAILY) {
+            if (currentPage == WeatherPage.DAILY || currentPage == WeatherPage.TOMORROW && currentViewGroup != null) {
                 WeatherLog.d(TAG, "CursorJournal", "setDailyCursor Daily");
                 updateDailyWeather((RecyclerView) currentViewGroup.findViewById(R.id.daily_recycler_view));
             }

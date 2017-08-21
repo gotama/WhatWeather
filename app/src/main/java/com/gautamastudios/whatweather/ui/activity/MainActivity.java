@@ -212,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
                             mainActivity.loaderCallbacks);
                     break;
                 case MSG_DAILY_CURSOR_CLOSED:
+                    WeatherLog.d(TAG, "CursorJournal", "MSG_DAILY_CURSOR_CLOSED");
                     args = new Bundle();
                     args.putInt(DataPoint.FIELD_DATA_POINT_TYPE, DataPointType.DAILY);
                     activityWeakReference.get().getSupportLoaderManager().restartLoader(GET_DAILY_DATA_POINT, args,
