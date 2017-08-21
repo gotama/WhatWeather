@@ -1,7 +1,9 @@
 package com.gautamastudios.whatweather.util;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.util.Log;
+import android.util.TypedValue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,5 +44,10 @@ public final class GeneralUtils {
 
     public static String convertDoubleToTemp(double temp) {
         return String.valueOf(Math.round(temp)) + DEGREE_SYMBOL;
+    }
+
+    public static int convertDPtoPX(int dpValue, Context context) {
+        Resources r = context.getResources();
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, r.getDisplayMetrics());
     }
 }

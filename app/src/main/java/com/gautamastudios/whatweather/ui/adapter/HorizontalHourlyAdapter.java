@@ -1,12 +1,9 @@
 package com.gautamastudios.whatweather.ui.adapter;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +13,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.gautamastudios.whatweather.R;
-import com.gautamastudios.whatweather.logger.WeatherLog;
 import com.gautamastudios.whatweather.storage.model.DataPoint;
 import com.gautamastudios.whatweather.util.GeneralUtils;
 
@@ -25,20 +21,13 @@ public class HorizontalHourlyAdapter extends RecyclerView.Adapter<HorizontalHour
     private static final String TAG = HorizontalHourlyAdapter.class.getSimpleName();
 
     private Context context;
-    private Cursor hourlyCursor;
+    private Cursor cursor;
     private boolean validCursor;
 
-    NotifyingDataSetObserver observer;
-
-    public HorizontalHourlyAdapter(Context context, Cursor cursor) {
+    public HorizontalHourlyAdapter(Context context) {
         this.context = context;
-        this.hourlyCursor = cursor;
 
-        validCursor = cursor != null;
-        observer = new NotifyingDataSetObserver();
-        if (hourlyCursor != null) {
-            hourlyCursor.registerDataSetObserver(observer);
-        }
+        this.validCursor = !(this.cursor == null || this.cursor.isClosed());
     }
 
     @Override
@@ -58,30 +47,39 @@ public class HorizontalHourlyAdapter extends RecyclerView.Adapter<HorizontalHour
             throw new IllegalStateException("this should only be called when the cursor is valid");
         }
 
-        if (!hourlyCursor.moveToPosition(position)) {
+        if (!cursor.moveToPosition(position)) {
             throw new IllegalStateException("couldn't move cursor to position " + position);
         }
 
-        if (hourlyCursor.moveToPosition(position)) {
-            double doubleTemp = hourlyCursor.getDouble(hourlyCursor.getColumnIndexOrThrow(DataPoint.FIELD_TEMPERATURE));
+        if (cursor.moveToPosition(position)) {
+            double doubleTemp = cursor.getDouble(cursor.getColumnIndexOrThrow(DataPoint.FIELD_TEMPERATURE));
 
             holder.temperature.setText(GeneralUtils.convertDoubleToTemp(doubleTemp));
-            String icon = hourlyCursor.getString(hourlyCursor.getColumnIndex(DataPoint.FIELD_ICON));
+            String icon = cursor.getString(cursor.getColumnIndex(DataPoint.FIELD_ICON));
             holder.hourlyIcon.setImageDrawable(
                     ContextCompat.getDrawable(context, DataPoint.Icon.getIcon(icon).getResourceId()));
-            holder.time.setText(GeneralUtils
-                    .convertUnixTimeToTime(hourlyCursor.getLong(hourlyCursor.getColumnIndex(DataPoint.FIELD_TIME))));
+            holder.time.setText(
+                    GeneralUtils.convertUnixTimeToTime(cursor.getLong(cursor.getColumnIndex(DataPoint.FIELD_TIME))));
 
             ViewGroup.LayoutParams params = holder.parentView.getLayoutParams();
-            params.height = convertDPtoPX(200);
+            params.height = GeneralUtils.convertDPtoPX(200, context);
             holder.parentView.setLayoutParams(params);
 
             ViewGroup.LayoutParams overlayParams = holder.overlayView.getLayoutParams();
-            overlayParams.height = convertDPtoPX((int) Math.round(doubleTemp * 6.33));
+            overlayParams.height = GeneralUtils.convertDPtoPX((int) Math.round(doubleTemp * 6.33), context);
             holder.overlayView.setLayoutParams(overlayParams);
 
         }
 
+    }
+
+    public void updateHourlyCursor(Cursor cursor) {
+        this.validCursor = cursor != null;
+        this.cursor = cursor;
+
+        if (validCursor && cursor.isClosed()) {
+            throw new IllegalStateException("couldn't use cursor to position");
+        }
     }
 
     public class HourlyViewHolder extends RecyclerView.ViewHolder {
@@ -110,33 +108,11 @@ public class HorizontalHourlyAdapter extends RecyclerView.Adapter<HorizontalHour
         }
     }
 
-    private int convertDPtoPX(int dpValue) {
-        Resources r = context.getResources();
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, r.getDisplayMetrics());
-    }
-
     @Override
     public int getItemCount() {
-        if (validCursor && hourlyCursor != null) {
-            return hourlyCursor.getCount();
+        if (validCursor && cursor != null) {
+            return cursor.getCount();
         }
         return 0;
-    }
-
-    private class NotifyingDataSetObserver extends DataSetObserver {
-
-        @Override
-        public void onChanged() {
-            super.onChanged();
-            validCursor = true;
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public void onInvalidated() {
-            super.onInvalidated();
-            validCursor = false;
-            notifyDataSetChanged();
-        }
     }
 }
