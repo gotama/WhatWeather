@@ -62,9 +62,15 @@ public class WeatherViewPageAdapter extends PagerAdapter {
                 recyclerView.setAdapter(new HorizontalHourlyAdapter(context));
 
                 updateCurrentWeather(layout);
-                updateHourlyWeather(recyclerView);
+                updateHourlyWeather(recyclerView, true);
                 break;
             case TOMORROW:
+                recyclerView = layout.findViewById(R.id.tomorrow_hourly_recycler_view);
+                recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                recyclerView.setAdapter(new HorizontalHourlyAdapter(context));
+
+                updateTomorrowWeather(layout);
+                updateHourlyWeather(recyclerView, true);
                 break;
             case DAILY:
                 recyclerView = layout.findViewById(R.id.daily_recycler_view);
@@ -74,7 +80,7 @@ public class WeatherViewPageAdapter extends PagerAdapter {
                 recyclerView.addItemDecoration(new ItemOffsetDecoration(spacing));
 
                 WeatherLog.d(TAG, "CursorJournal", "instantiateItem Daily");
-                updateDailyWeather(recyclerView);
+                updateDailyWeather(recyclerView, true);
                 break;
         }
 
@@ -82,39 +88,45 @@ public class WeatherViewPageAdapter extends PagerAdapter {
         return layout;
     }
 
-    private void updateDailyWeather(RecyclerView recyclerView) {
+    private void updateDailyWeather(RecyclerView recyclerView, boolean animate) {
         if (dailyCursor != null && dailyCursor.getCount() > 0) {
             WeatherLog.d(TAG, "CursorJournal", "Daily cursor count : " + dailyCursor.getCount());
             WeatherLog.d(TAG, "CursorJournal", "Daily cursor isClosed : " + dailyCursor.isClosed());
             if (dailyCursor.isClosed()) {
                 dailyCursor = null;
-                ((DailyCardAdapter) recyclerView.getAdapter()).updateDailyCursor(null);
+//                ((DailyCardAdapter) recyclerView.getAdapter()).updateDailyCursor(null);
                 WeatherLog.d(TAG, "CursorJournal", "Sending message");
                 sendMessage(MSG_DAILY_CURSOR_CLOSED, null);
-            } else {
+            } else if (recyclerView != null){
                 ((DailyCardAdapter) recyclerView.getAdapter()).updateDailyCursor(dailyCursor);
 
-                recyclerView.setLayoutAnimation(
-                        buildAnimation(recyclerView.getContext(), R.anim.layout_animation_from_right));
+                if (animate) {
+//                    recyclerView.setLayoutAnimation(
+//                            buildAnimation(recyclerView.getContext(), R.anim.layout_animation_from_right));
+//                    recyclerView.scheduleLayoutAnimation();
+                }
                 recyclerView.getAdapter().notifyDataSetChanged();
-                recyclerView.scheduleLayoutAnimation();
             }
         }
     }
 
-    private void updateHourlyWeather(RecyclerView recyclerView) {
+    private void updateHourlyWeather(RecyclerView recyclerView, boolean animate) {
         if (hourlyCursor != null && hourlyCursor.getCount() > 0) {
             if (hourlyCursor.isClosed()) {
                 hourlyCursor = null;
-                ((HorizontalHourlyAdapter) recyclerView.getAdapter()).updateHourlyCursor(null);
+//                ((HorizontalHourlyAdapter) recyclerView.getAdapter()).updateHourlyCursor(null);
                 sendMessage(MSG_HOURLY_CURSOR_CLOSED, null);
-            } else {
+            } else if (recyclerView != null) {
                 ((HorizontalHourlyAdapter) recyclerView.getAdapter()).updateHourlyCursor(hourlyCursor);
 
-                recyclerView.setLayoutAnimation(
-                        buildAnimation(recyclerView.getContext(), R.anim.layout_animation_from_right));
+                if (animate) {
+//                    recyclerView.setLayoutAnimation(
+//                            buildAnimation(recyclerView.getContext(), R.anim.layout_animation_from_right));
+//                    recyclerView.scheduleLayoutAnimation();
+                }
+
                 recyclerView.getAdapter().notifyDataSetChanged();
-                recyclerView.scheduleLayoutAnimation();
+
             }
         }
     }
@@ -127,8 +139,6 @@ public class WeatherViewPageAdapter extends PagerAdapter {
             } else {
                 do {
                     TextView currentTime = layout.findViewById(R.id.current_time);
-                    //TODO hi lo works only off daily
-                    TextView currentHiLo = layout.findViewById(R.id.current_hi_lo);
                     TextView currentTemp = layout.findViewById(R.id.current_temp);
                     TextView currentFeels = layout.findViewById(R.id.current_feels_like);
                     TextView currentSummary = layout.findViewById(R.id.current_summary);
@@ -144,13 +154,6 @@ public class WeatherViewPageAdapter extends PagerAdapter {
                     currentIcon.setImageDrawable(
                             ContextCompat.getDrawable(context, DataPoint.Icon.getIcon(icon).getResourceId()));
 
-                    currentHiLo.setText(String.format(Locale.getDefault(), "Day %1$s - Night %2$s", GeneralUtils
-                                    .convertDoubleToTemp(currentCursor
-                                            .getDouble(currentCursor.getColumnIndex(DataPoint
-                                                    .FIELD_APPARENT_TEMPERATURE_MAX))),
-                            GeneralUtils.convertDoubleToTemp(currentCursor.getDouble(
-                                    currentCursor.getColumnIndex(DataPoint.FIELD_APPARENT_TEMPERATURE_MIN)))));
-
                     currentFeels.setText(String.format(Locale.getDefault(), "Feels like %s", GeneralUtils
                             .convertDoubleToTemp(currentCursor
                                     .getDouble(currentCursor.getColumnIndex(DataPoint.FIELD_APPARENT_TEMPERATURE)))));
@@ -159,6 +162,50 @@ public class WeatherViewPageAdapter extends PagerAdapter {
                             currentCursor.getString(currentCursor.getColumnIndex(DataPoint.FIELD_SUMMARY)));
                 } while (currentCursor.moveToNext());
             }
+        }
+    }
+
+    private void updateTomorrowWeather(ViewGroup layout) {
+        if (dailyCursor != null && dailyCursor.moveToFirst()) {
+            if (dailyCursor.isClosed()) {
+                dailyCursor = null;
+                sendMessage(MSG_CURRENT_CURSOR_CLOSED, null);
+            } else {
+                TextView currentTime = layout.findViewById(R.id.tomorrow_time);
+                TextView currentHiLo = layout.findViewById(R.id.tomorrow_hi_lo);
+                TextView currentTemp = layout.findViewById(R.id.tomorrow_temp);
+                TextView currentFeels = layout.findViewById(R.id.tomorrow_feels_like);
+                TextView currentSummary = layout.findViewById(R.id.tomorrow_summary);
+                ImageView currentIcon = layout.findViewById(R.id.tomorrow_weather_icon);
+
+                if (currentTime != null && currentHiLo != null && currentTemp != null && currentFeels != null &&
+                        currentSummary != null && currentIcon != null) {
+                    if (dailyCursor.moveToNext()) {
+
+                        currentTime.setText(GeneralUtils.convertUnixTimeToDate(
+                                dailyCursor.getLong(dailyCursor.getColumnIndex(DataPoint.FIELD_TIME))));
+
+                        double max = dailyCursor.getDouble(dailyCursor.getColumnIndex(DataPoint.FIELD_TEMPERATURE_MAX));
+                        double min = dailyCursor.getDouble(dailyCursor.getColumnIndex(DataPoint.FIELD_TEMPERATURE_MIN));
+
+                        currentTemp.setText(GeneralUtils.convertDoubleToTemp((max + min) / 2));
+
+                        String icon = dailyCursor.getString(dailyCursor.getColumnIndex(DataPoint.FIELD_ICON));
+                        currentIcon.setImageDrawable(
+                                ContextCompat.getDrawable(context, DataPoint.Icon.getIcon(icon).getResourceId()));
+
+                        currentHiLo.setText(String.format(Locale.getDefault(), "Day %1$s - Night %2$s",
+                                GeneralUtils.convertDoubleToTemp(max), GeneralUtils.convertDoubleToTemp(min)));
+
+                        currentFeels.setText(String.format(Locale.getDefault(), "Feels like %s",
+                                GeneralUtils.convertDoubleToTemp((max + min) / 2)));
+
+                        currentSummary.setText(
+                                dailyCursor.getString(dailyCursor.getColumnIndex(DataPoint.FIELD_SUMMARY)));
+                    }
+                }
+            }
+
         }
     }
 
@@ -190,6 +237,30 @@ public class WeatherViewPageAdapter extends PagerAdapter {
     public void setPrimaryItem(ViewGroup container, int position, Object object) {
         super.setPrimaryItem(container, position, object);
 
+        //        if (currentPage.getId() > WeatherPage.getWeatherPage(position).getId()) {
+        //            updateCurrentWeather((ViewGroup) object);
+        //            updateHourlyWeather((RecyclerView)((ViewGroup) object).findViewWithTag(R.id
+        // .hourly_recycler_view), true);
+        //        } else {
+        //            updateDailyWeather((RecyclerView)((ViewGroup) object).findViewWithTag(R.id.daily_recycler_view));
+        //        }
+
+        switch (WeatherPage.getWeatherPage(position)) {
+            case TODAY:
+                updateCurrentWeather((ViewGroup) object);
+                updateHourlyWeather((RecyclerView) ((ViewGroup) object).findViewById(R.id.hourly_recycler_view),
+                        false);
+                break;
+            case TOMORROW:
+                updateTomorrowWeather((ViewGroup) object);
+                updateHourlyWeather(
+                        (RecyclerView) ((ViewGroup) object).findViewById(R.id.tomorrow_hourly_recycler_view), false);
+                break;
+            case DAILY:
+                updateDailyWeather((RecyclerView) ((ViewGroup) object).findViewById(R.id.daily_recycler_view), false);
+                break;
+        }
+
         currentPage = WeatherPage.getWeatherPage(position);
         currentViewGroup = (ViewGroup) object;
 
@@ -207,8 +278,13 @@ public class WeatherViewPageAdapter extends PagerAdapter {
     public void setHourlyCursor(Cursor cursor) {
         if (cursor != null && cursor.getCount() > 0) {
             hourlyCursor = cursor;
-            if (currentPage == WeatherPage.TODAY || currentPage == WeatherPage.TOMORROW && currentViewGroup != null) {
-                updateHourlyWeather((RecyclerView) currentViewGroup.findViewById(R.id.hourly_recycler_view));
+            if (currentViewGroup != null) {
+                if (currentPage == WeatherPage.TODAY || currentPage == WeatherPage.TOMORROW) {
+                    RecyclerView recyclerView = currentViewGroup.findViewById(R.id.hourly_recycler_view);
+                    if (recyclerView != null) {
+                        updateHourlyWeather(recyclerView, true);
+                    }
+                }
             }
         }
     }
@@ -218,10 +294,24 @@ public class WeatherViewPageAdapter extends PagerAdapter {
             WeatherLog.d(TAG, "CursorJournal", "setting dailyCursor");
             dailyCursor = cursor;
 
-            if (currentPage == WeatherPage.DAILY || currentPage == WeatherPage.TOMORROW && currentViewGroup != null) {
-                WeatherLog.d(TAG, "CursorJournal", "setDailyCursor Daily");
-                updateDailyWeather((RecyclerView) currentViewGroup.findViewById(R.id.daily_recycler_view));
+            if (currentViewGroup != null) {
+                if (currentPage == WeatherPage.DAILY || currentPage == WeatherPage.TOMORROW) {
+                    WeatherLog.d(TAG, "CursorJournal", "setDailyCursor Daily");
+                    RecyclerView recyclerView = currentViewGroup.findViewById(R.id.daily_recycler_view);
+                    if (recyclerView != null) {
+                        updateDailyWeather(recyclerView, true);
+                    }
+
+                    updateTomorrowWeather(currentViewGroup);
+
+                    RecyclerView tomorrowRecyclerView = currentViewGroup.findViewById(
+                            R.id.tomorrow_hourly_recycler_view);
+                    if (recyclerView != null) {
+                        updateHourlyWeather(tomorrowRecyclerView, true);
+                    }
+                }
             }
+
         }
     }
 

@@ -27,16 +27,10 @@
                 android:textColor="@android:color/black"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/current_hi_lo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:text="High and Low" />
-
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp">
 
                 <TextView
                     android:id="@+id/current_temp"
