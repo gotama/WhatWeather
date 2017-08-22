@@ -3,15 +3,9 @@ package com.gautamastudios.whatweather.service;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.content.ContentUris;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.gautamastudios.whatweather.api.APICallback;
 import com.gautamastudios.whatweather.api.DarkSkyAPI;
@@ -30,8 +24,6 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
-import static com.gautamastudios.whatweather.ui.activity.MainActivity.MESSENGER_INTENT_KEY;
-import static com.gautamastudios.whatweather.ui.activity.MainActivity.MSG_JOB_STOP;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -43,14 +35,6 @@ public class ForecastSyncJobService extends JobService {
 
     private static final String TAG = ForecastSyncJobService.class.getSimpleName();
 
-    private Messenger messenger;
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        messenger = intent.getParcelableExtra(MESSENGER_INTENT_KEY);
-        return START_NOT_STICKY;
-    }
-
     @Override
     public boolean onStartJob(final JobParameters jobParameters) {
         shouldSyncTask(jobParameters);
@@ -61,22 +45,6 @@ public class ForecastSyncJobService extends JobService {
     public boolean onStopJob(JobParameters params) {
         WeatherLog.d(TAG, "JobSchedulerJournal", " onStopJob : " + params.getJobId());
         return true;
-    }
-
-    private void sendMessage(int messageID, @Nullable Object params) {
-        if (messenger == null) {
-            WeatherLog.d(TAG, "JobSchedulerJournal",
-                    "Service is bound, not started. There's no callback to send a message to.");
-            return;
-        }
-        Message m = Message.obtain();
-        m.what = messageID;
-        m.obj = params;
-        try {
-            messenger.send(m);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error passing service object back to activity.", e);
-        }
     }
 
     /**
@@ -177,7 +145,6 @@ public class ForecastSyncJobService extends JobService {
                     @Override
                     protected void onPostExecute(Long timeStampPrimaryKey) {
                         if (timeStampPrimaryKey > 0) {
-                            sendMessage(MSG_JOB_STOP, timeStampPrimaryKey);
                             jobFinished(jobParameters, false);
                         } else {
                             WeatherLog.d(TAG, "JobSchedulerJournal", " - FAIL");
