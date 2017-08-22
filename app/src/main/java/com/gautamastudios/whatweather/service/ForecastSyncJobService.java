@@ -42,6 +42,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 public class ForecastSyncJobService extends JobService {
 
     private static final String TAG = ForecastSyncJobService.class.getSimpleName();
+    
 
     private Messenger messenger;
 
